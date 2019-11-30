@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         final List<String> list = new ArrayList<>();
 
         //리스트뷰와 리스트를 연결하기 위해 사용되는 어댑터
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, list);
 
         //리스트뷰의 어댑터를 지정해준다.
@@ -54,6 +54,12 @@ public class MainActivity extends AppCompatActivity {
                 manager.change_directory(root_dir);
                 String[] file_list = manager.get_file_list(".");
                 list.addAll(new ArrayList<>(Arrays.asList(file_list)));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
 
                 String local_path = Environment.getExternalStorageState();
                 if ( local_path.equals(Environment.MEDIA_MOUNTED)) {
@@ -75,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 manager.download("/kdh314/image2.jpg", local_path);
+
 
             }
         });
