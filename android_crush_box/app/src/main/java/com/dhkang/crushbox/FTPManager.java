@@ -70,12 +70,14 @@ public class FTPManager {
                 String fileName = file.getName();
 
                 if (file.isFile()) {
-                    fileList[i] = "(File) " + fileName;
-                } else {
+                    fileList[i] = fileName;
+                    i++;
+                } /*else {
                     fileList[i] = "(Directory) " + fileName;
-                }
+                    i++;
+                }*/
 
-                i++;
+
             }
         } catch (Exception e) {
             e.printStackTrace();
