@@ -60,29 +60,6 @@ public class MainActivity extends AppCompatActivity {
                         adapter.notifyDataSetChanged();
                     }
                 });
-
-                String local_path = Environment.getExternalStorageState();
-                if ( local_path.equals(Environment.MEDIA_MOUNTED)) {
-                    local_path = "/sdcard/android/data/com.dhkang.crushbox";
-                    File file = new File(local_path);
-                    if( !file.exists() )
-                        file.mkdirs();
-                }
-
-                local_path += "/image2.jpg";
-
-                File download_file = new File(local_path);
-                if (!download_file.exists()) {
-                    try {
-                        download_file.createNewFile();
-                    } catch(Exception e) {
-                        Log.d(TAG, "create new file fail");
-                    }
-                }
-
-                manager.download("/kdh314/image2.jpg", local_path);
-
-
             }
         });
 
@@ -95,9 +72,34 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView,
                                     View view, int position, long id) {
 
-
                 //클릭한 아이템의 문자열을 가져옴
-                String selected_item = (String) adapterView.getItemAtPosition(position);
+                final String selected_item = (String) adapterView.getItemAtPosition(position);
+
+                Thread download_thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String local_path = Environment.getExternalStorageState();
+                        if ( local_path.equals(Environment.MEDIA_MOUNTED)) {
+                            local_path = "/sdcard/android/data/com.dhkang.crushbox";
+                            File file = new File(local_path);
+                            if( !file.exists() )
+                                file.mkdirs();
+                        }
+                        local_path += File.separator + selected_item;
+
+                        File download_file = new File(local_path);
+                        if (!download_file.exists()) {
+                            try {
+                                download_file.createNewFile();
+                            } catch(Exception e) {
+                                Log.d(TAG, "create new file fail");
+                            }
+                        }
+
+                        manager.download(root_dir + selected_item, local_path);
+                    }
+                });
+                download_thread.start();
 
                 //텍스트뷰에 출력
                 selected_item_textview.setText(selected_item);
