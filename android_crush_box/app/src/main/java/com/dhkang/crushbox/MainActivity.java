@@ -13,6 +13,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.dhkang.crushbox.FTPManager;
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView selected_item_textview;
