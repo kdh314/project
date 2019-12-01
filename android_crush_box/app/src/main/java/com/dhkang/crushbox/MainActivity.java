@@ -77,7 +77,53 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
         FileListUpdateAsyncTask task = new FileListUpdateAsyncTask();
         task.execute();
 
+
+
+
         //리스트뷰의 아이템을 클릭시 해당 아이템의 문자열을 가져오기 위한 처리
+        class FileDownloadAsyncTask extends AsyncTask<Void, Integer, Boolean> {
+            String mFilename;
+            FileDownloadAsyncTask(String filename){
+                mFilename = filename;
+            }
+
+            @Override
+            protected Boolean doInBackground(Void... strings) {
+                String local_path = Environment.getExternalStorageState();
+                if ( local_path.equals(Environment.MEDIA_MOUNTED)) {
+                    local_path = "/sdcard/android/data/com.dhkang.crushbox";
+                    File file = new File(local_path);
+                    if( !file.exists() )
+                        file.mkdirs();
+                }
+                local_path += File.separator + mFilename;
+
+                File download_file = new File(local_path);
+                if (!download_file.exists()) {
+                    try {
+                        download_file.createNewFile();
+                    } catch(Exception e) {
+                        Log.d(TAG, "create new file fail");
+                    }
+                }
+
+                boolean result = manager.download(root_dir + mFilename, local_path);
+
+                return result;
+            }
+
+            @Override
+            protected void onProgressUpdate(Integer... values) {
+                super.onProgressUpdate(values);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean s) {
+
+            }
+        }
+
+
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -87,31 +133,8 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
                 //클릭한 아이템의 문자열을 가져옴
                 final String selected_item = (String) adapterView.getItemAtPosition(position);
 
-                Thread download_thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String local_path = Environment.getExternalStorageState();
-                        if ( local_path.equals(Environment.MEDIA_MOUNTED)) {
-                            local_path = "/sdcard/android/data/com.dhkang.crushbox";
-                            File file = new File(local_path);
-                            if( !file.exists() )
-                                file.mkdirs();
-                        }
-                        local_path += File.separator + selected_item;
-
-                        File download_file = new File(local_path);
-                        if (!download_file.exists()) {
-                            try {
-                                download_file.createNewFile();
-                            } catch(Exception e) {
-                                Log.d(TAG, "create new file fail");
-                            }
-                        }
-
-                        manager.download(root_dir + selected_item, local_path);
-                    }
-                });
-                download_thread.start();
+                FileDownloadAsyncTask task = new FileDownloadAsyncTask(selected_item);
+                task.execute();
 
                 //텍스트뷰에 출력
                 selected_item_textview.setText(selected_item);
