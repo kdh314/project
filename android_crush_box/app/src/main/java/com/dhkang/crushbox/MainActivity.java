@@ -1,5 +1,7 @@
 package com.dhkang.crushbox;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -11,8 +13,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.pedro.library.AutoPermissions;
 import com.pedro.library.AutoPermissionsListener;
@@ -27,12 +31,14 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
     private final String root_dir = "/kdh314/";
     private TextView selected_item_textview;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         AutoPermissions.Companion.loadAllPermissions(this, 101);
+
 
         ListView listview = (ListView) findViewById(R.id.listview);
         selected_item_textview = (TextView) findViewById(R.id.selected_item_textview);
@@ -78,22 +84,21 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
         task.execute();
 
 
-
-
         //리스트뷰의 아이템을 클릭시 해당 아이템의 문자열을 가져오기 위한 처리
         class FileDownloadAsyncTask extends AsyncTask<Void, Integer, Boolean> {
             String mFilename;
-            FileDownloadAsyncTask(String filename){
+
+            FileDownloadAsyncTask(String filename) {
                 mFilename = filename;
             }
 
             @Override
             protected Boolean doInBackground(Void... strings) {
                 String local_path = Environment.getExternalStorageState();
-                if ( local_path.equals(Environment.MEDIA_MOUNTED)) {
+                if (local_path.equals(Environment.MEDIA_MOUNTED)) {
                     local_path = "/sdcard/android/data/com.dhkang.crushbox";
                     File file = new File(local_path);
-                    if( !file.exists() )
+                    if (!file.exists())
                         file.mkdirs();
                 }
                 local_path += File.separator + mFilename;
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
                 if (!download_file.exists()) {
                     try {
                         download_file.createNewFile();
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         Log.d(TAG, "create new file fail");
                     }
                 }
@@ -120,10 +125,11 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
             @Override
             protected void onPostExecute(Boolean s) {
 
+                Intent intent = new Intent(MainActivity.this, Video.class);
+                startActivity(intent);
+
             }
         }
-
-
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -136,13 +142,16 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
                 FileDownloadAsyncTask task = new FileDownloadAsyncTask(selected_item);
                 task.execute();
 
+
                 //텍스트뷰에 출력
                 selected_item_textview.setText(selected_item);
+
             }
         });
 
 
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
