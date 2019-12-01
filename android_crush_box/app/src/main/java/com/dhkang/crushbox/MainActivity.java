@@ -1,6 +1,6 @@
 package com.dhkang.crushbox;
 
-import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.dhkang.crushbox.FTPManager;
-
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "CrushBox";
     private final String root_dir = "/kdh314/";
@@ -34,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
         ListView listview = (ListView) findViewById(R.id.listview);
         selected_item_textview = (TextView) findViewById(R.id.selected_item_textview);
 
-
         //데이터를 저장하게 되는 리스트
         final List<String> list = new ArrayList<>();
 
@@ -45,25 +42,35 @@ public class MainActivity extends AppCompatActivity {
         //리스트뷰의 어댑터를 지정해준다.
         listview.setAdapter(adapter);
 
+
         final FTPManager manager = new FTPManager();
 
-        Thread ftp_thread = new Thread(new Runnable() {
+        class FileListUpdateAsyncTask extends AsyncTask<Void, Integer, String[]> {
             @Override
-            public void run() {
+            protected String[] doInBackground(Void... strings) {
                 manager.connect("sbkang.synology.me", "kdh314", "1q2w3e", 21);
                 manager.change_directory(root_dir);
                 String[] file_list = manager.get_file_list(".");
-                list.addAll(new ArrayList<>(Arrays.asList(file_list)));
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+                return file_list;
             }
-        });
 
-        ftp_thread.start();
+            @Override
+            protected void onProgressUpdate(Integer... values) {
+                super.onProgressUpdate(values);
+            }
+
+            @Override
+            protected void onPostExecute(String[] s) {
+                list.addAll(new ArrayList<>(Arrays.asList(s)));
+                adapter.notifyDataSetChanged();
+            }
+
+            //@Override
+            //protected void onCancelled(Boolean s) { super.onCancelled(s);}
+        }
+
+        FileListUpdateAsyncTask task = new FileListUpdateAsyncTask();
+        task.execute();
 
         //리스트뷰의 아이템을 클릭시 해당 아이템의 문자열을 가져오기 위한 처리
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
